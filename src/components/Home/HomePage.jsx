@@ -1,14 +1,20 @@
 import React from 'react';
 import { ProductCard } from '../ProductCart/ProductCart';
-import { Search, ShoppingBag } from 'lucide-react';
+import { Search, ShoppingBag, Loader2 } from 'lucide-react';
 
 function HomePage() {
   const [products, setProducts] = React.useState([]);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [cartCount, setCartCount] = React.useState(0);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     // Fetch products from backend API
+    setIsLoading(true);
+    
+    const minLoadingTime = 1000; // 1 second
+    const loadingStartTime = Date.now();
+    
     fetch('http://localhost:8090/products')
       .then(response => {
         if (!response.ok) {
@@ -17,14 +23,35 @@ function HomePage() {
         return response.json();
       })
       .then(data => {
-        setProducts(data);
+        console.log('Fetched data:', data); // Debug output
+
+        const loadingElapsedTime = Date.now() - loadingStartTime;
+        const remainingLoadTime = Math.max(0, minLoadingTime - loadingElapsedTime);
+        
+        // Safely extract product list
+        const productList = Array.isArray(data) ? data : data.products;
+
+        // If still not an array, fallback to empty array
+        setProducts(Array.isArray(productList) ? productList : []);
+        
+        setTimeout(() => {
+          setIsLoading(false);
+        }, remainingLoadTime);
       })
       .catch(error => {
         console.error('Error fetching products:', error);
+        const loadingElapsedTime = Date.now() - loadingStartTime;
+        const remainingLoadTime = Math.max(0, minLoadingTime - loadingElapsedTime);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, remainingLoadTime);
       });
   }, []);
 
-  const filteredProducts = products.filter(product =>
+  // Safe fallback if products is not an array
+  const safeProducts = Array.isArray(products) ? products : [];
+
+  const filteredProducts = safeProducts.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -36,25 +63,6 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">POS System</h1>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <ShoppingBag className="w-6 h-6 text-gray-600" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Search Bar */}
@@ -71,21 +79,30 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map(product => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No products found</p>
+        {/* Loading Animation */}
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />
+            <p className="mt-4 text-gray-600 font-medium">Loading products...</p>
           </div>
+        ) : (
+          <>
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                />
+              ))}
+            </div>
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No products found</p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
