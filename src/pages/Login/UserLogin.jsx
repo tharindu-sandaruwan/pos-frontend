@@ -1,17 +1,17 @@
 import React from 'react'
 import HeaderComponent from '../../components/Header/Header';
 import FooterComponent from '../../components/Footer/Footer';
-import RegisterComponent from '../../components/Register/Register';
-const Register = () => {
+import LoginComponent from '../../components/Login/UserLogin';
+const UserLogin = () => {
     return (
       <>
         <div>
-          <HeaderComponent/>
-            <RegisterComponent/>
-          <FooterComponent/>  
+            <HeaderComponent/>
+            <LoginComponent/>
+            <FooterComponent/>
         </div>
       </>
     );
   };
   
-  export default Register;
+  export default UserLogin;
