@@ -24,9 +24,11 @@ const Header = () => {
 
             <div className="flex space-x-4">
               {/* Login button (optional navigation) */}
+              <Link to="/UserLogin">
               <button className="bg-emerald-700 hover:bg-emerald-800 px-4 py-2 rounded-lg transition-colors">
                 Login
               </button>
+              </Link>
 
               {/* Sign Up button navigates to /register */}
               <Link to="/register">
