@@ -26,7 +26,7 @@ function Register() {
     e.preventDefault();
     try {
       await axios.post('http://localhost:8090/users', formData);
-      setMessage('User added successfully!');
+      setMessage('Your Account created successfully!');
 
       setFormData({
         userName: '',
